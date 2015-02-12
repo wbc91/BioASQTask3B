@@ -21,6 +21,7 @@ void TermExtractor::parse(char *s)
 	}
 	fclose(fp);
 	
+<<<<<<< HEAD
 	rapidjson::Document doc;
 	doc.Parse<0>(data.c_str());
 
@@ -33,9 +34,26 @@ void TermExtractor::parse(char *s)
 		else if (object.IsString())printf("%s\n", object.GetString());
 		else if (object.IsBool())
 			if(object.GetBool())printf("true\n");
+=======
+	printf("%s\n", data.c_str());
+	rapidjson::Document doc;
+	doc.Parse<0>(data.c_str());
+	auto& t = doc[1];
+	
+	for(int i = 0; i < t.Size(); ++i)
+	{
+		auto& ele = t[i];
+		if(ele.IsInt()) printf("%d\n", ele.GetInt());
+		else if(ele.IsString()) printf("%d\n",ele.GetString());
+		else if(ele.IsBool()) 
+			if(ele.GetBool())printf("true\n");
+>>>>>>> develop
 			else printf("false\n");
 		else
 			printf("flag error\n");
 	}
+<<<<<<< HEAD
 	
+=======
+>>>>>>> develop
 }

@@ -9,7 +9,10 @@
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/filestream.h"
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> develop
 using namespace std;
 using namespace rapidjson;
 

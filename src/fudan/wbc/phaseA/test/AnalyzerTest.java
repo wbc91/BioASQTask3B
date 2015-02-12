@@ -1,5 +1,6 @@
 package fudan.wbc.phaseA.test;
 
+<<<<<<< HEAD
 import fudan.wbc.phaseA.analyzer.*;
 
 import java.io.IOException;
@@ -11,10 +12,13 @@ import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.util.Version;
+=======
+>>>>>>> develop
 import org.junit.Test;
 
 public class AnalyzerTest {
 	@Test
+<<<<<<< HEAD
 	public void createAnalyzerTest() throws IOException{
 		final CharArraySet phraseSet = new CharArraySet(Version.LUCENE_46, Arrays.asList( "virus", "Cidofovir Vistide"),false);
 		final String input = "Which virus is Cidofovir(Vistide) indicated for";
@@ -29,6 +33,9 @@ public class AnalyzerTest {
 			hasToken = btf.incrementToken();
 			if(hasToken)System.out.println("token:'"+term.toString()+"'");
 		}while(hasToken);
+=======
+	public void createAnalyzerTest(){
+>>>>>>> develop
 		
 	}
 }

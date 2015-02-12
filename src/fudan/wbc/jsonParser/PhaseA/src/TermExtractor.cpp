@@ -20,7 +20,7 @@ void TermExtractor::parse(char *s)
 		}
 	}
 	fclose(fp);
-	
+
 	rapidjson::Document doc;
 	doc.Parse<0>(data.c_str());
 
@@ -37,5 +37,5 @@ void TermExtractor::parse(char *s)
 		else
 			printf("flag error\n");
 	}
-	
+
 }

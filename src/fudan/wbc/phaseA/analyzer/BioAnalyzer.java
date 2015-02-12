@@ -1,5 +1,6 @@
 package fudan.wbc.phaseA.analyzer;
 
+<<<<<<< HEAD
 import java.io.Reader;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -15,4 +16,10 @@ class BioAnalyzer extends Analyzer{
 		return null;
 	}
 		
+=======
+public class BioAnalyzer {
+	public void analyze(){
+		
+	}
+>>>>>>> develop
 }
