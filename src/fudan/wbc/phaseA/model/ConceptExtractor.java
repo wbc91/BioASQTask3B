@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-
+//check mac work
 public class ConceptExtractor {
 	private static BufferedReader reader = null;
 	private static ArrayList<String>conceptList = null;
