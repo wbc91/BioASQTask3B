@@ -7,12 +7,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 //check mac work
 public class ConceptExtractor {
 	private static BufferedReader reader = null;
 	private static ArrayList<String>conceptList = null;
 	private static PrintWriter pw = null;
+	private static Set<String>conceptSet = null;
 	
 	public static List<String>extract() throws IOException{
 		reader = new BufferedReader(new FileReader(new File("../dict.txt")));
@@ -30,6 +33,7 @@ public class ConceptExtractor {
 			IOException {
 		File fileList = new File("../PubTator");
 		pw = new PrintWriter(new File("../dict.txt"));
+		conceptSet = new HashSet<String>();
 		for(File file:fileList.listFiles()){
 			long startTime=System.currentTimeMillis();
 			if(file.getName().equals("chemical2pubtator")){
@@ -69,11 +73,15 @@ public class ConceptExtractor {
 			concepts = tmpString.split("\t")[2].split("\\|");
 			for(String concept:concepts){
 				if(concept.equals("Mentions"))continue;
+				concept = concept.toLowerCase();
+				if(conceptSet.contains(concept))continue;
+				conceptSet.add(concept);
 				pw.println(concept);
 //				conceptList.add(concept);
 			}
 			concepts = null;
 		}
+		System.out.println("concept Size:" + conceptSet.size());
 		reader.close();
 	}
 	
