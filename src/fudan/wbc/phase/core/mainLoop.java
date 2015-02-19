@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -24,7 +25,7 @@ public class mainLoop {
 		System.out.println("Total Memory: "+lRuntime.totalMemory()/1024/1024+"M<br/>");
 		
 		
-		List<String>list = ConceptExtractor.extract();
+		Set<String>list = ConceptExtractor.extract();
 		final CharArraySet phraseSet = new CharArraySet(Version.LUCENE_46, list,false);
 		WhitespaceTokenizer wt= null;
 		BioTokenFilter btf = new BioTokenFilter(Version.LUCENE_46,wt,phraseSet,false);

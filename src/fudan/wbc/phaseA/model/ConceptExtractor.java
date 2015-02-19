@@ -13,16 +13,17 @@ import java.util.Set;
 //check mac work
 public class ConceptExtractor {
 	private static BufferedReader reader = null;
-	private static ArrayList<String>conceptList = null;
+	private static Set<String>conceptList = null;
 	private static PrintWriter pw = null;
 	private static Set<String>conceptSet = null;
 	
-	public static List<String>extract() throws IOException{
+	public static Set<String>extract() throws IOException{
 		reader = new BufferedReader(new FileReader(new File("../dict.txt")));
-		conceptList = new ArrayList<String>();
+//		reader = new BufferedReader(new FileReader(new File("../dict.small")));
+		conceptList = new HashSet<String>();
 		String tmpConcept = "";
 		while((tmpConcept = reader.readLine())!= null){
-			if(tmpConcept != null && tmpConcept != "")
+			if(tmpConcept != null && !tmpConcept.equals(""))
 				conceptList.add(tmpConcept);
 		}
 		
