@@ -16,6 +16,8 @@ import java.util.List;
 
 import java.util.Set;
 
+import org.ansj.domain.Term;
+import org.ansj.splitWord.analysis.ToAnalysis;
 import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.util.CharArraySet;
@@ -84,6 +86,19 @@ public class AnalyzerTest {
 		}
 		
 		pw.close();
+		
+	}
+	
+	@Test
+	public void createAnsjAnalyzerTest() throws Exception{
+		String str = "which genes have been found mutated in gray platelet syndrome patients";
+		List<Term>terms = ToAnalysis.paser(str);
+		Iterator<Term>termIt = terms.iterator();
+		while(termIt.hasNext()){
+			Term tmpTerm = (Term)termIt.next();
+			String tmpString = tmpTerm.toString();
+			System.out.println(tmpString);
+		}
 		
 	}
 	
