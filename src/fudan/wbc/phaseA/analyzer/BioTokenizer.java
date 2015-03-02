@@ -148,7 +148,7 @@ public class BioTokenizer extends Tokenizer{
 				Pattern pattern = null;
 				Matcher matcher = null;
 				if(TokenStrategy.bpValue == TokenStrategy.Bp.bp0){
-					
+					subwords = String.valueOf(words).split(" ");
 				}else{
 					if(TokenStrategy.bpValue == TokenStrategy.Bp.bp1){
 						pattern = Pattern.compile("[^\\(\\)\\[\\]\\-\\_\\/]+");
@@ -166,9 +166,10 @@ public class BioTokenizer extends Tokenizer{
 						tmpWords.append(" ");
 					}
 					subwords = tmpWords.toString().trim().split(" ");
+					//transform to lowercase
+					
 				}
 				
-				//transform to lowercase
 				for(int i = 0; i < subwords.length; ++i){
 					if(subwords.equals(""))break;
 					subwords[i] = subwords[i].toLowerCase();
@@ -197,7 +198,7 @@ public class BioTokenizer extends Tokenizer{
 				//nomalize breakpoints
 				
 				if(TokenStrategy.bpValue == TokenStrategy.Bp.bp0){
-					
+					words = subwords[0].toCharArray();
 				}else {
 					if(TokenStrategy.normValue == TokenStrategy.Norm.h){
 						words = Utility.join(subwords, '-').toCharArray();
