@@ -12,6 +12,7 @@ import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.junit.Test;
 
 import fudan.wbc.phaseA.analyzer.BioAnalyzer;
+import fudan.wbc.phaseA.analyzer.TokenStrategy;
 import fudan.wbc.phaseA.indexer.SAXLuceneIndexer;
 
 public class IndexerTest{
@@ -35,8 +36,12 @@ public class IndexerTest{
 //		String input = "123 / ";
 //		String input = "abc     def";
 //		String input = "TrpEb_1";
-		String input = "buses";
+		String input = "(MIP)-1alpha 0.20 20,000 1,2,3,4-TeCDD";
+//		String input = "0.20 20,000 1,2,3,4-TeCDD";
 		
+		TokenStrategy.bpValue = TokenStrategy.Bp.bp3;
+		TokenStrategy.normValue = TokenStrategy.Norm.s;
+		TokenStrategy.grk = false;
 		TokenStream tokenStream = analyzer.tokenStream("content", new StringReader(input));
 		CharTermAttribute ta = tokenStream.getAttribute(CharTermAttribute.class);
 		OffsetAttribute oa = tokenStream.getAttribute(OffsetAttribute.class);
@@ -44,5 +49,7 @@ public class IndexerTest{
 		while(tokenStream.incrementToken()){
 			System.out.println(ta.toString()+" start: "+oa.startOffset()+" end:"+oa.endOffset());
 		}
+		tokenStream.close();
+		
 	}
 }

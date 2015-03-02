@@ -68,7 +68,7 @@ public class SAXLuceneIndexer extends DefaultHandler{
 	public void endElement(String uri, String localName,String qName) throws SAXException{
 		if("PMID".equals(qName)){
 			if("".equals(pmid)){
-				document.add(new StringField("PMID",elementBuffer.toString(), Field.Store.NO));
+				document.add(new StringField("PMID",elementBuffer.toString(), Field.Store.YES));
 				pmid = elementBuffer.toString();
 			}
 			elementBuffer.setLength(0);

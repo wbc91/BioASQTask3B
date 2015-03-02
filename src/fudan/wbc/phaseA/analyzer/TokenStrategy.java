@@ -8,7 +8,7 @@ public class TokenStrategy {
 	public enum Norm{
 		h,s,j
 	}
-	
+	public static boolean grk = false;
 	public static Bp bpValue = Bp.bp0;
 	public static Norm normValue = Norm.h;
 }
