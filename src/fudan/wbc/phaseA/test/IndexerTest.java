@@ -3,6 +3,8 @@ package fudan.wbc.phaseA.test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.StringReader;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Token;
@@ -18,9 +20,19 @@ import fudan.wbc.phaseA.indexer.SAXLuceneIndexer;
 public class IndexerTest{
 	@Test
 	public void createIndexerTest() throws Exception{
-		FileInputStream inputStream = new FileInputStream(new File("../trainingText/text.xml"));
+		File f = new File("../../../medline/");
+		int filecount = 0;
+		Set<String>existedPmids = new HashSet<String>();
 		SAXLuceneIndexer sli = new SAXLuceneIndexer();
-		sli.indexXML(inputStream);
+		for(int i = f.listFiles().length-1;i >= 0; i--){
+	    	File file = f.listFiles()[i];
+	    	filecount++;  
+	        if (filecount > 965) break;
+	        System.out.println("文档" + (i+1) + "正在被索引");
+	        System.out.println(existedPmids.size());
+	        FileInputStream inputStream = new FileInputStream(file);
+	        sli.indexXML(inputStream,existedPmids);
+		}
 	}
 	
 	@Test

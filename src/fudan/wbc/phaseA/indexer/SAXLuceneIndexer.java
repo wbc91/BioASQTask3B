@@ -3,6 +3,7 @@ package fudan.wbc.phaseA.indexer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -14,7 +15,6 @@ import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.xml.sax.Attributes;
@@ -29,13 +29,18 @@ public class SAXLuceneIndexer extends DefaultHandler{
 	private StringBuffer abstractTextBuffer = new StringBuffer();
 	private IndexWriter writer = null;
 	private Document document = null;
-	private String pmid = "";
 	private FieldType fieldType = null;
+	private Directory myDir = null;
+	private Set<String>existedPmids = null;
+	private boolean isDuplicate = false;
+	private boolean isPmid = true;
 	
-	public void indexXML(InputStream xmlStream) throws ParserConfigurationException, SAXException, IOException{
-		Directory dir = FSDirectory.open(new File("../TestIndex"));
+	public void indexXML(InputStream xmlStream, Set<String>existedPmids) throws ParserConfigurationException, SAXException, IOException{
+		if(myDir == null)
+			myDir = FSDirectory.open(new File("../TestIndex"));
+		this.existedPmids = existedPmids;
 		IndexWriterConfig iwc = new IndexWriterConfig(LuceneVersion.matchVersion, new BioAnalyzer());
-		writer = new IndexWriter(dir, iwc);
+		writer = new IndexWriter(myDir, iwc);
 		fieldType = new FieldType();
 		fieldType.setIndexed(true);
 		fieldType.setStored(false);
@@ -53,6 +58,8 @@ public class SAXLuceneIndexer extends DefaultHandler{
 	
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException{
+		this.elementBuffer.setLength(0);
+		this.isPmid = true;
 		if("MedlineCitation".equals(qName)){
 			document = new Document();
 		}
@@ -60,29 +67,28 @@ public class SAXLuceneIndexer extends DefaultHandler{
 	
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException{
-		elementBuffer.setLength(0);
 		elementBuffer.append(ch,start,length);
 	}
 	
 	@Override
 	public void endElement(String uri, String localName,String qName) throws SAXException{
-		if("PMID".equals(qName)){
-			if("".equals(pmid)){
-				document.add(new StringField("PMID",elementBuffer.toString(), Field.Store.YES));
-				pmid = elementBuffer.toString();
-			}
-			elementBuffer.setLength(0);
+		if("PMID".equals(qName) && isPmid){
+			if(existedPmids.contains(elementBuffer.toString())){
+				isDuplicate = true;
+			} 
+			document.add(new StringField("PMID",elementBuffer.toString(), Field.Store.YES));
+			isPmid = false;
+			if(!isDuplicate)existedPmids.add(elementBuffer.toString());		
 		}
 		else if("AbstractText".equals(qName)){
 			abstractTextBuffer.append(elementBuffer.toString());
-			elementBuffer.setLength(0);
 		}
 		else if("Abstract".equals(qName)){
 			document.add(new Field("Abstract", abstractTextBuffer.toString(),fieldType));
 			abstractTextBuffer.setLength(0);
 		}
 		else if("MedlineCitation".equals(qName)){
-			pmid = "";
+			if(isDuplicate)isDuplicate=false;
 			try {
 				writer.addDocument(document);
 			} catch (Exception e) {
