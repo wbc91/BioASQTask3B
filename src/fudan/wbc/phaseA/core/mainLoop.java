@@ -1,4 +1,4 @@
-package fudan.wbc.phase.core;
+package fudan.wbc.phaseA.core;
 
 import java.io.File;
 import java.io.StringReader;
