@@ -19,6 +19,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import fudan.wbc.phaseA.analyzer.BioAnalyzer;
@@ -47,6 +49,21 @@ public class SAXLuceneIndexer extends DefaultHandler{
 		fieldType.setTokenized(true);
 		
 		SAXParserFactory factory = SAXParserFactory.newInstance();
+		factory.setNamespaceAware(true);
+		factory.setValidating(true);
+		factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+		try {
+			factory.setFeature("http://xml.org/sax/features/validation",false);
+		} catch (SAXNotRecognizedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SAXNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		SAXParser parser = factory.newSAXParser();
 		parser.parse(xmlStream, this);
 	}
