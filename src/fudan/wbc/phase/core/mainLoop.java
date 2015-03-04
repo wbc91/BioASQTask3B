@@ -1,16 +1,14 @@
 package fudan.wbc.phase.core;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.StringReader;
-import java.util.List;
 import java.util.Set;
+
 
 import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.util.Version;
-import org.json.simple.parser.ParseException;
 
 import fudan.wbc.phaseA.analyzer.BioTokenFilter;
 import fudan.wbc.phaseA.model.ConceptExtractor;
