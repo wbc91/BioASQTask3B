@@ -68,7 +68,7 @@ public class AnalyzerTest {
 		for(String input :questions){
 			pw.println(input);
 			input = input.toLowerCase();
-			input = input.replaceAll("[\\pP‘’“”]","");
+			input = input.replaceAll("[\\pP������������]","");
 			wt = new WhitespaceTokenizer(Version.LUCENE_46,new StringReader(input));
 			btf = new BioTokenFilter(Version.LUCENE_46,wt,phraseSet,false);
 			CharTermAttribute term = btf.addAttribute(CharTermAttribute.class);
