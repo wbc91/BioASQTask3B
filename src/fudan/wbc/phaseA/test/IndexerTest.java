@@ -28,7 +28,7 @@ public class IndexerTest{
 	    	File file = f.listFiles()[i];
 	    	filecount++;  
 	        if (filecount > 965) break;
-	        System.out.println("ÎÄµµ" + (i+1) + "ÕýÔÚ±»Ë÷Òý");
+	        System.out.println("ï¿½ï¿½ï¿½ï¿½" + (i+1) + "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½");
 	        System.out.println(existedPmids.size());
 	        FileInputStream inputStream = new FileInputStream(file);
 	        sli.indexXML(inputStream,existedPmids);
@@ -48,8 +48,11 @@ public class IndexerTest{
 //		String input = "123 / ";
 //		String input = "abc     def";
 //		String input = "TrpEb_1";
-		String input = "(MIP)-1alpha 0.20 20,000 1,2,3,4-TeCDD";
+//		String input = "(MIP)-1alpha 0.20 20,000 1,2,3,4-TeCDD";
+//		String input = "cytosine-5";
 //		String input = "0.20 20,000 1,2,3,4-TeCDD";
+//		String input = "L-3,5,3',5'-Tetraiodothyronine";
+		String input = "O-(4-Hydroxy-3,5-diiodophenyl) 3,5-diiodo-L-tyrosine";
 		
 		TokenStrategy.bpValue = TokenStrategy.Bp.bp3;
 		TokenStrategy.normValue = TokenStrategy.Norm.s;
