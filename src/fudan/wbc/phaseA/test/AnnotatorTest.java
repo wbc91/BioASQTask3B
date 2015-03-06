@@ -16,6 +16,7 @@ public class AnnotatorTest {
 	static{
 		replacement = new TreeMap<String,String>();
 		replacement.put("thyronamines", "thyronamine");
+		replacement.put("DNMT3", "");
 	}
 	
 	@Test
