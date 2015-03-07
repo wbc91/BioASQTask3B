@@ -16,6 +16,7 @@ import org.junit.Test;
 import fudan.wbc.phaseA.analyzer.BioAnalyzer;
 import fudan.wbc.phaseA.analyzer.TokenStrategy;
 import fudan.wbc.phaseA.indexer.SAXLuceneIndexer;
+import fudan.wbc.phaseA.model.MedlineDataBaseGenerator;
 
 public class IndexerTest{
 	@Test
@@ -34,7 +35,22 @@ public class IndexerTest{
 	        sli.indexXML(inputStream,existedPmids);
 		}
 	}
-	
+	@Test
+	public void createDatabaseTest() throws Exception{
+		File f = new File("../../../medline");
+		int filecount = 0;
+		Set<String>existedPmids = new HashSet<String>();
+		MedlineDataBaseGenerator mdg = new MedlineDataBaseGenerator();
+		for(int i = f.listFiles().length-1; i>=0; i--){
+			File file = f.listFiles()[i];
+			filecount++;
+			if(filecount > 965)break;
+			System.out.println("xml document "+(i+1)+" is being parsed");
+			System.out.println(existedPmids.size());
+			FileInputStream inputStream = new FileInputStream(file);
+			mdg.createMedlineDatabase(inputStream, existedPmids);
+		}
+	}
 	@Test
 	public void createBioTokenizerTest()throws Exception{
 		Analyzer analyzer = new BioAnalyzer();
