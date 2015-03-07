@@ -24,7 +24,7 @@ import org.xml.sax.SAXException;
 
 public class BioOntologyAnnotator {
 	public static void getAnnotation(String question) throws IOException, ParseException, ParserConfigurationException, SAXException{
-		String questionUrl = "http://data.bioontology.org/annotator?text="+question+"&ontologies=MESH,GO,PR"
+		String questionUrl = "http://data.bioontology.org/annotator?text="+question+"&ontologies=MESH,GO,PR,DOID,DRON,CCO"
 				+ "&longest_only=true";
 		URL url = new URL(questionUrl);
 		URLConnection urlConn = url.openConnection();
