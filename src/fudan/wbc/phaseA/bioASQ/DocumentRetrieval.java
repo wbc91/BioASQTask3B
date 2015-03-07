@@ -34,9 +34,9 @@ public class DocumentRetrieval {
 		TopDocs topDocs = searcher.search(query, 10);
 		for(ScoreDoc match : topDocs.scoreDocs){
 			Explanation explanation = searcher.explain(query, match.doc);
-			System.out.println("---------------");
+//			System.out.println("---------------");
 			System.out.println(searcher.doc(match.doc).get("PMID"));
-			System.out.println(explanation.toString());
+//			System.out.println(explanation.toString());
 		}
 		
 	}
