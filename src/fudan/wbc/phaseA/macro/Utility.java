@@ -18,4 +18,8 @@ public class Utility {
 		}
 		return buf.toString();
 	}
+	
+	public final static String mySQLUrl = "jdbc:mysql://localhost:3306/bioasq2015?"
+            + "user=root&password=123456&useUnicode=true&characterEncoding=UTF8";
+	public final static String fileDir = "../trainingSet/BioASQ-trainingDataset2b.json";
 }

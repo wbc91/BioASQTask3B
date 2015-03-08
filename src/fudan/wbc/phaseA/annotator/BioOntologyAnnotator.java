@@ -11,11 +11,15 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.lucene.index.Terms;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -23,7 +27,18 @@ import org.json.simple.parser.ParseException;
 import org.xml.sax.SAXException;
 
 public class BioOntologyAnnotator {
+	private static Set<String> terms = null;
+	public static String[] getTerms(){
+		String[] tmpTerms = new String[terms.size()];
+		Iterator<String>iter = terms.iterator();
+		int i = 0;
+		while(iter.hasNext()){
+			tmpTerms[i++]=(String)iter.next();
+		}
+		return tmpTerms;
+	}
 	public static void getAnnotation(String question) throws IOException, ParseException, ParserConfigurationException, SAXException{
+		terms = new HashSet<String>();
 		String questionUrl = "http://data.bioontology.org/annotator?text="+question+"&ontologies=MESH,GO,PR,DOID,DRON,CCO"
 				+ "&longest_only=true";
 		URL url = new URL(questionUrl);
@@ -62,6 +77,7 @@ public class BioOntologyAnnotator {
 				String token = (String)jsonEle.get("text");
 				if(token == null || token.equals(""))continue;
 				System.out.print(token);
+				terms.add(token);
 			}
 			if(i != jsonArray.size()-1)
 				System.out.print("||");
