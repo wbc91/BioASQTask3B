@@ -76,8 +76,8 @@ public class SAXLuceneIndexer extends DefaultHandler{
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException{
 		this.elementBuffer.setLength(0);
-		this.isPmid = true;
 		if("MedlineCitation".equals(qName)){
+			this.isPmid = true;
 			document = new Document();
 		}
 	}

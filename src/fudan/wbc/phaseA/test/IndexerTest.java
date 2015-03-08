@@ -28,8 +28,9 @@ public class IndexerTest{
 		for(int i = f.listFiles().length-1;i >= 0; i--){
 	    	File file = f.listFiles()[i];
 	    	filecount++;  
-	        if (filecount > 965) break;
-	        System.out.println("����" + (i+1) + "����������");
+	    	if(filecount == 66)continue;
+	        if (filecount > 863) break;
+	        System.out.println("file " + (i+1) + " is being indexing");
 	        System.out.println(existedPmids.size());
 	        FileInputStream inputStream = new FileInputStream(file);
 	        sli.indexXML(inputStream,existedPmids);
@@ -44,7 +45,8 @@ public class IndexerTest{
 		for(int i = f.listFiles().length-1; i>=0; i--){
 			File file = f.listFiles()[i];
 			filecount++;
-			if(filecount > 965)break;
+			if(filecount <= 66)continue;
+			if(filecount > 863)break;
 			System.out.println("xml document "+(i+1)+" is being parsed");
 			System.out.println(existedPmids.size());
 			FileInputStream inputStream = new FileInputStream(file);

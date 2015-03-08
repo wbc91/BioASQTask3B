@@ -31,13 +31,14 @@ public class DocumentRetrieval {
 			Query q = qb.createPhraseQuery("Abstract", queryTerms[i]);
 			query.add(q,BooleanClause.Occur.MUST);
 		}
-		TopDocs topDocs = searcher.search(query, 10);
+		TopDocs topDocs = searcher.search(query, 100);
 		for(ScoreDoc match : topDocs.scoreDocs){
 			Explanation explanation = searcher.explain(query, match.doc);
 //			System.out.println("---------------");
 			System.out.println(searcher.doc(match.doc).get("PMID"));
 //			System.out.println(explanation.toString());
 		}
+		
 		
 	}
 	

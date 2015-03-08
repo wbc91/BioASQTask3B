@@ -85,7 +85,9 @@ public class MedlineDataBaseGenerator extends DefaultHandler{
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException{
 		this.elementBuffer.setLength(0);
-		this.isPmid = true;
+		if (qName.equals("MedlineCitation")) {
+			this.isPmid = true;
+		}
 	}
 	
 	@Override
