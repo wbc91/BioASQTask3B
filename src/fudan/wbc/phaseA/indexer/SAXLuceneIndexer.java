@@ -29,6 +29,7 @@ import fudan.wbc.phaseA.macro.LuceneVersion;
 public class SAXLuceneIndexer extends DefaultHandler{
 	private StringBuffer elementBuffer = new StringBuffer();
 	private StringBuffer abstractTextBuffer = new StringBuffer();
+	private StringBuffer journal_year = new StringBuffer();
 	private IndexWriter writer = null;
 	private Document document = null;
 	private FieldType fieldType = null;
@@ -36,6 +37,7 @@ public class SAXLuceneIndexer extends DefaultHandler{
 	private Set<String>existedPmids = null;
 	private boolean isDuplicate = false;
 	private boolean isPmid = true;
+	private boolean isJournal = false;
 	
 	public void indexXML(InputStream xmlStream, Set<String>existedPmids) throws ParserConfigurationException, SAXException, IOException{
 		if(myDir == null)
@@ -45,7 +47,7 @@ public class SAXLuceneIndexer extends DefaultHandler{
 		writer = new IndexWriter(myDir, iwc);
 		fieldType = new FieldType();
 		fieldType.setIndexed(true);
-		fieldType.setStored(false);
+		fieldType.setStored(true);
 		fieldType.setTokenized(true);
 		
 		SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -80,6 +82,8 @@ public class SAXLuceneIndexer extends DefaultHandler{
 			this.isPmid = true;
 			document = new Document();
 		}
+		if (qName.equals("Journal"))
+		      this.isJournal = true;
 	}
 	
 	@Override
@@ -104,6 +108,19 @@ public class SAXLuceneIndexer extends DefaultHandler{
 			document.add(new Field("Abstract", abstractTextBuffer.toString(),fieldType));
 			abstractTextBuffer.setLength(0);
 		}
+		else if (qName.equals("Year")) {
+		      if (this.isJournal) {
+		        this.journal_year.append(this.elementBuffer.toString());
+		      }
+		}
+		else if (qName.equals("Journal")) {
+			 if ((this.journal_year != null) && (this.journal_year.length() > 0)) {
+			        document.add(new Field("Journal_year", this.journal_year.toString(), fieldType));
+			        this.journal_year.setLength(0);
+			 }
+			 this.isJournal = false;
+		}
+		
 		else if("MedlineCitation".equals(qName)){
 			if(isDuplicate)isDuplicate=false;
 			try {
@@ -113,6 +130,7 @@ public class SAXLuceneIndexer extends DefaultHandler{
 				e.printStackTrace();
 			}
 		}
+		
 	}
 	
 	@Override

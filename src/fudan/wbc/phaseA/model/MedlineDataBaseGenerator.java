@@ -23,8 +23,6 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import fudan.wbc.phaseA.macro.Utility;
-
 
 public class MedlineDataBaseGenerator extends DefaultHandler{
 	private StringBuffer elementBuffer = new StringBuffer();
@@ -36,7 +34,9 @@ public class MedlineDataBaseGenerator extends DefaultHandler{
 	private boolean isPmid = true;
 	private String mesh_sep = " | ";
 	
-		
+	private static String url = "jdbc:mysql://localhost:3306/bioasq2015?"
+                + "user=root&password=123456&useUnicode=true&characterEncoding=UTF8";
+	
 	private int mPmid = 0;
 	private String mAbstract = "";
 	private String mMesh = "";
@@ -45,7 +45,6 @@ public class MedlineDataBaseGenerator extends DefaultHandler{
 	
 	private Connection conn = null;
 	private PreparedStatement stmt = null;
-	private final static String url = Utility.mySQLUrl;
 	
 	public void createMedlineDatabase(InputStream xmlStream, Set<String>existedPmids) throws Exception{
 		this.existedPmids = existedPmids;

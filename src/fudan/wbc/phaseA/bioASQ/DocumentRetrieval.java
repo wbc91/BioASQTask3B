@@ -2,6 +2,7 @@ package fudan.wbc.phaseA.bioASQ;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -37,24 +38,35 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.QueryBuilder;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.xml.sax.SAXException;
 
 import fudan.wbc.phaseA.analyzer.AnalyzerUtils;
 import fudan.wbc.phaseA.analyzer.BioAnalyzer;
 import fudan.wbc.phaseA.annotator.BioOntologyAnnotator;
+import fudan.wbc.phaseA.annotator.PubTator;
 import fudan.wbc.phaseA.macro.Utility;
 import fudan.wbc.phaseA.model.SourceFileAnalyzer;
 
 public class DocumentRetrieval {
+	private SourceFileAnalyzer sfa = SourceFileAnalyzer.getInstance();
 	private Directory directory = null;
 	private IndexSearcher searcher = null;
 	private Connection conn = null;
 	private PreparedStatement stmt = null;
 	private final static String url = Utility.mySQLUrl;
 	private SearcherManager searcherManager;
-	private Map<String, Double>sentence2Score = new HashMap<String, Double>();
-	private Map<String, Integer>sentence2Pmid = new HashMap<String,Integer>();
+	
+	private ArrayList<String>relevantDocuments = null;
+	
+	private FileWriter documentWriter = null;
+	private JSONArray documentArray = null;
+	
+	private Map<String, Double>passage2Score = new HashMap<String, Double>();
+	private Map<String, Integer>passage2Pmid = new HashMap<String, Integer>();
+	private Map<String, HashSet<String>>passage2Terms = new HashMap<String, HashSet<String>>();
 	
 	private static Map<String,String>replacement = null;
 	private static Set<String>unrecognized = null;
@@ -81,12 +93,21 @@ public class DocumentRetrieval {
 		else return 0.0;
 	}
 	
+	public Object getJSONArray(){
+		return this.documentArray;
+	}
+	
 	public void retrieve() throws Exception{
-		String[] questionList = SourceFileAnalyzer.parse(new File(Utility.fileDir));
+		sfa.parse(new File(Utility.fileDir));
+		JSONArray questionList = sfa.getQuestionArray();
 		BioOntologyAnnotator boa = new BioOntologyAnnotator();
-		for(int i = 0; i < questionList.length; ++i){
+		for(int i = 0; i < questionList.size(); ++i){
 			Set<String>otherWords = new HashSet<String>();
-			String tmp = questionList[i].trim().replaceAll("\n", " ");
+			JSONObject question = (JSONObject)questionList.get(i);
+			String questionBody = (String)question.get("body");
+			String questionId = (String)question.get("id");
+			documentWriter = new FileWriter(new File("../dataSet/"+Utility.DirName+"/document/"+questionId+".json"));
+			String tmp = questionBody.trim().replaceAll("\n", " ");
 			tmp = tmp.replaceAll("\\?", " ");
 			String[] words = tmp.split(" ");
 			for(int j = 0; j < words.length; ++j){
@@ -98,7 +119,7 @@ public class DocumentRetrieval {
 				
 			}
 			tmp = Utility.join(words, '+');
-			System.out.println(questionList[i]+": ");
+			System.out.println(questionBody+": ");
 			boa.getAnnotation(tmp);
 			String[] annotatedTerms = boa.getTerms();
 			String[] queryTerms = new String[annotatedTerms.length+otherWords.size()];
@@ -111,21 +132,23 @@ public class DocumentRetrieval {
 				queryTerms[index++] = (String)iter.next();
 			}
 			retrieve(queryTerms);
+			//write Files
+			JSONObject documentObject = new JSONObject();
+			JSONArray documentArray = new JSONArray();
+			documentArray.addAll(relevantDocuments);
+			documentObject.put("documents", documentArray);
+			documentObject.put("id", questionId);
+			documentWriter.write(documentObject.toJSONString());
+			documentWriter.flush();
+			documentWriter.close();
 		}
 	}
 	
 	public void retrieve(String[] queryTerms) throws IOException{
-		sentence2Pmid = new HashMap<String,Integer>();
-		sentence2Score = new HashMap<String, Double>();
+		passage2Score = new HashMap<String, Double>();
+		passage2Pmid = new HashMap<String, Integer>();
+		passage2Terms = new HashMap<String, HashSet<String>>();
 		//retrieve document by using a query and save a document file
-		try{
-			Class.forName("com.mysql.jdbc.Driver");
-			conn = DriverManager.getConnection(url);
-		}catch(SQLException e){
-			e.printStackTrace();
-		}catch(Exception e){
-			e.printStackTrace();
-		}
 		directory = FSDirectory.open(new File("../TestIndex"));
 		searcherManager = new SearcherManager(directory,null);
 		searcher = searcherManager.acquire();
@@ -133,89 +156,78 @@ public class DocumentRetrieval {
 		QueryBuilder qb = new QueryBuilder(new BioAnalyzer());
 		for(int i = 0; i < queryTerms.length; ++i){
 			Query q = qb.createPhraseQuery("Abstract", queryTerms[i]);
-			query.add(q,BooleanClause.Occur.MUST);
+			query.add(q,BooleanClause.Occur.SHOULD);
 		}
-		String sql = "SELECT pmid,abstract FROM medline WHERE pmid = ?";
-		TopDocs topDocs = searcher.search(query, 100);
-		try {
-			stmt = conn.prepareStatement(sql);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+		TopDocs topDocs = searcher.search(query, 800);
+
+		HashSet<String>pmidSet = new HashSet<String>();
 		for(ScoreDoc match : topDocs.scoreDocs){
-//			Explanation explanation = searcher.explain(query, match.doc);
-//			System.out.println("---------------");
-			int tmpPmid = Integer.parseInt(searcher.doc(match.doc).get("PMID"));
+			String tmpPmid = searcher.doc(match.doc).get("PMID");
+			pmidSet.add(tmpPmid);
+//			System.out.println(tmpPmid);
+		}
+		PubTator pt = new PubTator();
+		pt.parseDocuments(pmidSet);
+		Iterator<String>pmidSetIter = pmidSet.iterator();
+		while(pmidSetIter.hasNext()){
+			String tmpPmid = pmidSetIter.next();
 			IndexReader indexReader = searcher.getIndexReader();
 			AnalyzerUtils au = new AnalyzerUtils();
+			String exceptionPassage = "";
 			try {
-				stmt.setInt(1, tmpPmid);
-				ResultSet rs = stmt.executeQuery();
-				while(rs.next()){
-					String tmpAbstract = rs.getString("abstract");
-					Set<String>removeEndSet = new HashSet<String>(Arrays.asList(".","!","?","\n",";"));
-					String[]sentences = tmpAbstract.replaceAll("[\\.\\:\\;\\?\\!\\\n] ","######").split("######");
-					for(int i = 0; i < sentences.length; ++i){
-						if(i == sentences.length-1){
-							Iterator it = removeEndSet.iterator();
-							while(it.hasNext()){
-								String endChar = (String)it.next();
-								if(sentences[i].endsWith(endChar)){
-									sentences[i] = sentences[i].substring(0,sentences[i].length()-1-endChar.length());
-								}
-							}
+				passage2Terms = pt.retrievePassages(tmpPmid);
+				Iterator<String>passageIter = passage2Terms.keySet().iterator();
+				while(passageIter.hasNext()){
+					String tmpPassage = (String)passageIter.next();
+					exceptionPassage = tmpPassage;
+					passage2Pmid.put(tmpPassage, Integer.parseInt(tmpPmid));
+					Set<String>terms = passage2Terms.get(tmpPassage);
+					Iterator<String>termIter = terms.iterator();
+					double passageScore = 0.0d;
+					while(termIter.hasNext()){
+						String tmpTerm = (String)termIter.next();
+						au.reset();
+						au.displayTokens(new BioAnalyzer(), tmpTerm);
+						double idf = 0.0d;
+						String[] tmpTerms = au.getPhrase();
+						for(int k = 0; k < tmpTerms.length; k++){
+							if(tmpTerms[k] == null)break;
+							idf += termIdf(indexReader.docFreq(new Term("Abstract",tmpTerms[k])),indexReader.maxDoc());
 						}
-						if(sentences[i].trim().length() > 0){
-							double sentenceScore = 0.0d;
-							sentence2Pmid.put(sentences[i], tmpPmid);
-							BioOntologyAnnotator.getAnnotation(sentences[i].trim().replaceAll(" ", "+"));
-							String[] terms = BioOntologyAnnotator.getTerms();
-							for(int j = 0; j < terms.length; ++j){
-								au.displayTokens(new BioAnalyzer(), terms[i]);
-								double idf = 0.0d;
-								String[] tmpTerms = au.getPhrase();
-								for(int k = 0; j < tmpTerms.length; k++){
-									idf += termIdf(indexReader.docFreq(new Term("Abstract",tmpTerms[k])),indexReader.maxDoc());
-								}
-								for(int k = 0; k < queryTerms.length; k++){
-									sentenceScore += idf*wordSimilarity(terms[j], queryTerms[k]);
-								}
-							}
-							sentence2Score.put(sentences[i],sentenceScore);	
+						for(int k = 0; k < queryTerms.length; k++){
+							passageScore += idf*wordSimilarity(tmpTerm, queryTerms[k]);
 						}
 					}
+					passage2Score.put(tmpPassage, passageScore);
 				}
-				
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			catch (ParseException e) {
-				e.printStackTrace();
-			} catch (ParserConfigurationException e) {
-				e.printStackTrace();
-			} catch (SAXException e) {
+			}catch(Exception e){
+				System.out.println(tmpPmid+": "+exceptionPassage);
 				e.printStackTrace();
 			}
 		}
+		
+		
 		//sorting
-		List<Map.Entry<String, Double>> list = new ArrayList<Map.Entry<String, Double>>(sentence2Score.entrySet());
+		List<Map.Entry<String, Double>> list = new ArrayList<Map.Entry<String, Double>>(passage2Score.entrySet());
 		Collections.sort(list,new Comparator<Map.Entry<String, Double>>(){
 			public int compare(Entry<String,Double>o1, Entry<String,Double>o2){
 				return o2.getValue().compareTo(o1.getValue());
 			}
 		});
 		
+		if(relevantDocuments == null){
+			relevantDocuments = new ArrayList<String>();
+		}
 		Set<Integer>pmids = new HashSet<Integer>();
 		for(Map.Entry<String,Double>mapping:list){
-			int sortedPmid = sentence2Pmid.get(mapping.getKey());
+			int sortedPmid = passage2Pmid.get(mapping.getKey());
 			if(!pmids.contains(sortedPmid)){
 				System.out.println(sortedPmid);
 				pmids.add(sortedPmid);
+				if(pmids.size() > 100)break;
+				relevantDocuments.add("http://www.ncbi.nlm.nih.gov/pubmed/"+String.valueOf(sortedPmid));
 			}
 		}
-		
 		
 	}
 	

@@ -49,8 +49,16 @@ public class BioOntologyAnnotator {
 		urlConn.addRequestProperty("Cookie", "_bp_session=86d435c5261963d9d857626c555d5e01; ncbo_apikey=8b5b7825-538d-40e0-9e9e-5ab9274a9aeb");
 		urlConn.addRequestProperty("Connection", "keep-alive");
 		urlConn.addRequestProperty("Cache-Control", "max-age=0");
-	
-		Reader reader = new InputStreamReader(new BufferedInputStream(urlConn.getInputStream()));
+		
+		Reader reader = null;
+		try{
+			reader = new InputStreamReader(new BufferedInputStream(urlConn.getInputStream()));
+		}catch(Exception e){
+			System.out.println();
+			System.out.println(question);
+			System.out.println(question.replaceAll("\\+", " "));
+			e.printStackTrace();
+		}
 		StringBuffer sb = new StringBuffer();
 		int c = 0;
 		while((c=reader.read())!=-1){

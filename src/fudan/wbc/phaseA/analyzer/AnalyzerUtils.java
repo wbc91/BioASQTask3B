@@ -10,6 +10,11 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 public class AnalyzerUtils {
 	private String[] phrase = new String[100];
 	private int count_ph = 0;
+	
+	public void reset(){
+		phrase = new String[100];
+		count_ph = 0;
+	}
 	public String[] getPhrase(){
 		return phrase;
 	}
@@ -17,17 +22,18 @@ public class AnalyzerUtils {
 		return count_ph;
 	}
 	public void displayTokens(Analyzer analyzer, String text) throws IOException{
-		displayTokens(analyzer.tokenStream("contents", new StringReader(text)));
+		displayTokens(analyzer.tokenStream("content", new StringReader(text)));
 	}
 	public void displayTokens(TokenStream stream) throws IOException{
 		CharTermAttribute term = stream.addAttribute(CharTermAttribute.class);
+		stream.reset();
 		while(stream.incrementToken()){
 //			System.out.print("["+term.term()+"]");
 			phrase[count_ph++] = term.toString();
 		}
 	}
 	public int wordCount(Analyzer analyzer, String text)throws IOException{
-		TokenStream stream = analyzer.tokenStream("contents", new StringReader(text));
+		TokenStream stream = analyzer.tokenStream("content", new StringReader(text));
 		int count = 0;
 		CharTermAttribute term = stream.addAttribute(CharTermAttribute.class);
 		while(stream.incrementToken()){
@@ -37,7 +43,7 @@ public class AnalyzerUtils {
 		return count;
 	}
 	public String getStemmingQuery(Analyzer analyzer, String text)throws IOException{
-		TokenStream stream = analyzer.tokenStream("contents", new StringReader(text));
+		TokenStream stream = analyzer.tokenStream("content", new StringReader(text));
 		CharTermAttribute term = stream.addAttribute(CharTermAttribute.class);
 		String query = "";
 		while(stream.incrementToken()){
