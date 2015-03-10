@@ -25,60 +25,7 @@ public class PubTatorDatabaseGenerator {
 	private Set<String>existedPmids = null;
 	private int fileNode = 1;
 	private int fileCount = 0;
-	public StringBuffer init(InputStream inputStream){
-		Reader reader = null;
-		StringBuffer sb = new StringBuffer();
-		try{
-			reader = new InputStreamReader(new BufferedInputStream(inputStream));
-			int c = 0;
-			char pre =' ', now = ' ';
-			int countChar = 0;
-			while((c=reader.read())!=-1){
-				now = (char)c;
-				if(now == '<' ){
-					if(pre != '>' && pre != '\n'&&countChar!=0){
-						c = reader.read();
-						char next = (char)c;
-						if(next != '/'){
-							sb.append("&lt;");
-						}
-						else {
-							sb.append(now);
-						}
-						sb.append(next);
-						now = next; pre = now; ++countChar;++countChar;
-					}
-				}
-				else {
-					sb.append((char)c);
-					pre = now; ++countChar;
-				}
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		
-		return sb;
-	}
-	
 	public String read(InputStream inputStream){
-//		int bytesWritten = 0;
-//		int byteCount = 0;
-//		byte[] bytes = new byte[8192];
-//		 
-//		while ((byteCount = inputStream.read(bytes)) != -1)
-//		{
-//			if(bytesWritten+byteCount >= bytes.length){
-//	         	byte[] newBytes = new byte[(bytesWritten+byteCount+bytes.length)*2];
-//   				System.arraycopy(bytes, 0, newBytes, 0, bytes.length);
-//   				bytes = newBytes;	  
-//	        }
-//			outputStream.write(bytes, bytesWritten, byteCount);
-//	        bytesWritten += byteCount;
-//	        
-//		}
-//		xmlStream.close();
-//		outputStream.close();
 		Reader reader = null;
 		reader = new InputStreamReader(new BufferedInputStream(inputStream));
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();  

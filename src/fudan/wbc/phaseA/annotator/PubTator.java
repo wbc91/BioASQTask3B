@@ -2,9 +2,12 @@ package fudan.wbc.phaseA.annotator;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -16,10 +19,15 @@ import java.util.Map;
 public class PubTator {
 	private String pubUrl = null;
 	private PubTatorParser pubTatorParser = new PubTatorParser();
+	private String questionId;
 	public Map<String, HashSet<String>> retrievePassages(String pmid) {
 		return pubTatorParser.getPassage2Terms(pmid);
 	}
-
+	
+	public void setId(String id){
+		this.questionId = id;
+	}
+	
 	public void parseDocuments(HashSet<String>tmpPmids) {
 		String pmids = "";
 		Iterator<String>pmidIter = tmpPmids.iterator();
@@ -33,40 +41,36 @@ public class PubTator {
 		try {
 			URL url = new URL(pubUrl);
 			URLConnection urlConn = url.openConnection();
-			
 			Reader reader = null;
+			reader = new InputStreamReader(new BufferedInputStream(urlConn.getInputStream()));
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();  
+			int i;  
+			String str = "";
 			try{
-				reader = new InputStreamReader(new BufferedInputStream(urlConn.getInputStream()));
-			}catch(Exception e){
+				float start = System.currentTimeMillis();
+				while ((i = reader.read()) != -1) {  
+				    baos.write(i);  
+				}  
+				float end = System.currentTimeMillis();
+				System.out.println((end-start)/1000+"s");
+				str = baos.toString();
+				str = str.replaceAll("< ", "&lt; ");
+				str = str.replaceAll(" <", " &lt;");
+				str = str.replaceAll("(<)([0-9])", "&lt;$2");
+				str = str.replaceAll("<\\.", "&lt;.");
+				str = str.replaceAll("> ", "&gt; ");
+				str = str.replaceAll(" >", " &gt;");
+				str = str.replaceAll("<&lt;/date>", "</date>");
+				str = str.replaceAll("</passage>\n</passage>\n</document>\n", "");
+				str = str.replaceAll("<or", "(&lt;or");
+				str = str.replaceAll("<-->", "&lt;--&gt;");
+			}catch(IOException e){
 				e.printStackTrace();
 			}
-			StringBuffer sb = new StringBuffer();
-			int c = 0;
-			char pre =' ', now = ' ';
-			int countChar = 0;
-			while((c=reader.read())!=-1){
-				now = (char)c;
-				if(now == '<' ){
-					if(pre != '>' && pre != '\n'&&countChar!=0){
-						c = reader.read();
-						char next = (char)c;
-						if(next != '/'){
-							sb.append("&lt;");
-						}
-						else {
-							sb.append(now);
-						}
-						sb.append(next);
-						now = next; pre = now; ++countChar;++countChar;
-					}
-				}
-				else {
-					sb.append((char)c);
-					pre = now; ++countChar;
-				}
-			}
-			System.out.println(sb.toString());
-			InputStream inputStream = new ByteArrayInputStream(sb.toString().getBytes());
+			PrintWriter pw = new PrintWriter(new File("../QuestionPubTatorPair/"+questionId+".txt"));
+			pw.print(str);
+			pw.close();
+			InputStream inputStream = new ByteArrayInputStream(str.getBytes());
 			pubTatorParser.parseFile(inputStream);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();

@@ -131,7 +131,7 @@ public class DocumentRetrieval {
 			while(iter.hasNext()){
 				queryTerms[index++] = (String)iter.next();
 			}
-			retrieve(queryTerms);
+			retrieve(queryTerms,questionId);
 			//write Files
 			JSONObject documentObject = new JSONObject();
 			JSONArray documentArray = new JSONArray();
@@ -144,7 +144,7 @@ public class DocumentRetrieval {
 		}
 	}
 	
-	public void retrieve(String[] queryTerms) throws IOException{
+	public void retrieve(String[] queryTerms,String questionId) throws IOException{
 		passage2Score = new HashMap<String, Double>();
 		passage2Pmid = new HashMap<String, Integer>();
 		passage2Terms = new HashMap<String, HashSet<String>>();
@@ -167,6 +167,7 @@ public class DocumentRetrieval {
 //			System.out.println(tmpPmid);
 		}
 		PubTator pt = new PubTator();
+		pt.setId(questionId);
 		pt.parseDocuments(pmidSet);
 		Iterator<String>pmidSetIter = pmidSet.iterator();
 		while(pmidSetIter.hasNext()){
