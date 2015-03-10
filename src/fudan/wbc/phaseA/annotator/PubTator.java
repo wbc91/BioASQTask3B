@@ -16,6 +16,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
+import fudan.wbc.phaseA.macro.Utility;
+
 public class PubTator {
 	private String pubUrl = null;
 	private PubTatorParser pubTatorParser = new PubTatorParser();
@@ -67,7 +69,7 @@ public class PubTator {
 			}catch(IOException e){
 				e.printStackTrace();
 			}
-			PrintWriter pw = new PrintWriter(new File("../QuestionPubTatorPair/"+questionId+".txt"));
+			PrintWriter pw = new PrintWriter(new File("../QuestionPubTatorPair/"+Utility.DirName+"/"+questionId+".txt"));
 			pw.print(str);
 			pw.close();
 			InputStream inputStream = new ByteArrayInputStream(str.getBytes());

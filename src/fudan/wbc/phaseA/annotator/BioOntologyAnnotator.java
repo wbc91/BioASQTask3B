@@ -1,14 +1,12 @@
 package fudan.wbc.phaseA.annotator;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashSet;
@@ -19,16 +17,23 @@ import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.lucene.index.Terms;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.xml.sax.SAXException;
 
+import fudan.wbc.phaseA.macro.Utility;
+
 public class BioOntologyAnnotator {
-	private static Set<String> terms = null;
-	public static String[] getTerms(){
+	private Set<String> terms = null;
+	private String questionId = "";
+	public void setQuestionId(String questionId){
+		this.questionId = questionId;
+	}
+	
+	
+	public String[] getTerms(){
 		String[] tmpTerms = new String[terms.size()];
 		Iterator<String>iter = terms.iterator();
 		int i = 0;
@@ -37,7 +42,7 @@ public class BioOntologyAnnotator {
 		}
 		return tmpTerms;
 	}
-	public static void getAnnotation(String question) throws IOException, ParseException, ParserConfigurationException, SAXException{
+	public void getAnnotation(String question) throws IOException, ParseException, ParserConfigurationException, SAXException{
 		terms = new HashSet<String>();
 		String questionUrl = "http://data.bioontology.org/annotator?text="+question+"&ontologies=MESH,GO,PR,DOID,DRON,CCO"
 				+ "&longest_only=true";
@@ -59,6 +64,9 @@ public class BioOntologyAnnotator {
 			System.out.println(question.replaceAll("\\+", " "));
 			e.printStackTrace();
 		}
+		
+		PrintWriter pw = new PrintWriter(new File("../Annotation/"+Utility.DirName+"/"+questionId+".txt"));
+		
 		StringBuffer sb = new StringBuffer();
 		int c = 0;
 		while((c=reader.read())!=-1){
@@ -85,12 +93,16 @@ public class BioOntologyAnnotator {
 				String token = (String)jsonEle.get("text");
 				if(token == null || token.equals(""))continue;
 				System.out.print(token);
+				pw.print(token);
 				terms.add(token);
 			}
-			if(i != jsonArray.size()-1)
+			if(i != jsonArray.size()-1){
 				System.out.print("||");
+				pw.print("||");
+			}
 		}
-		
-		
+		System.out.println();
+		pw.println();
+		pw.close();
 	}
 }
