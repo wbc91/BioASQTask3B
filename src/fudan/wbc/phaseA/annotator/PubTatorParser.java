@@ -28,6 +28,7 @@ public class PubTatorParser extends DefaultHandler{
 	private StringBuffer passageBuffer = new StringBuffer();
 	private StringBuffer pmidBuffer = new StringBuffer();
 	private HashSet<String>termSet = null;
+	private HashSet<String>pmidSet = new HashSet<String>();
 	private HashMap<String, HashSet<String>> passage2Terms = null;
 	private Map<String, HashMap<String, HashSet<String>>>pmid2PassageAndTerms = null;
 	
@@ -42,6 +43,9 @@ public class PubTatorParser extends DefaultHandler{
 	private int fileNode;
 	private int fileCount;
 	
+	public void reset(){
+		pmidSet = new HashSet<String>();
+	}
 	public void setFileNode(int fileNode){
 		this.fileNode = fileNode;
 	}
@@ -52,6 +56,11 @@ public class PubTatorParser extends DefaultHandler{
 	public PubTatorParser(){
 		dbconn = Utility.getConn();
 	}
+	
+	public HashSet<String> getPmidSet(){
+		return this.pmidSet;
+	}
+	
 	public boolean getNeedsClean(){
 		return this.needsClean;
 	}
@@ -59,38 +68,12 @@ public class PubTatorParser extends DefaultHandler{
 		this.isNeedDatabaseInsertion = flag;
 	}
 	
-	public void parseFile(InputStream xmlStream){
+	public void parseFile(InputStream xmlStream) throws Exception{
 		SAXParserFactory factory = SAXParserFactory.newInstance();
-		try{
-			factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-			SAXParser parser = factory.newSAXParser();
-			parser.parse(xmlStream, this);
-		}catch(SAXNotRecognizedException e){
-			System.out.println("parsing failed for SAXNotRecognizedException");
-			System.out.println("PubTatorParser::parseFile:"+docCount);
-			needsClean = true;
-			e.printStackTrace();
-		}catch(SAXNotSupportedException e){
-			System.out.println("parsing failed for SAXNotSupportedException");
-			System.out.println("PubTatorParser::parseFile:"+docCount);
-			needsClean = true;
-			e.printStackTrace();
-		}catch(ParserConfigurationException e){
-			System.out.println("parsing failed for ParserConfigurationException");
-			System.out.println("PubTatorParser::parseFile:"+docCount);
-			needsClean = true;
-			e.printStackTrace();
-		} catch (SAXException e) {
-			System.out.println("parsing failed for SAXException");
-			System.out.println("PubTatorParser::parseFile:"+docCount);
-			needsClean = true;
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.out.println("parsing failed for IOException");
-			System.out.println("PubTatorParser::parseFile:"+docCount);
-			needsClean = true;
-			e.printStackTrace();
-		}
+		factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+		SAXParser parser = factory.newSAXParser();
+		parser.parse(xmlStream, this);
+	
 	}
 	
 	@Override
@@ -149,6 +132,7 @@ public class PubTatorParser extends DefaultHandler{
 		}
 		else if("id".equals(qName)){
 			pmidBuffer.append(elementBuffer.toString());
+			pmidSet.add(pmidBuffer.toString());
 			++docCount;
 			if(isNeedDatabaseInsertion){
 				PreparedStatement stmt = null;
@@ -173,8 +157,7 @@ public class PubTatorParser extends DefaultHandler{
 		
 	}
 
-	public Map<String, HashSet<String>> getPassage2Terms(String pmid) {
-		// TODO Auto-generated method stub
-		return null;
+	public Map<String,HashSet<String>> getPassage2Terms(String pmid) {
+		return pmid2PassageAndTerms.get(pmid);
 	}
 }

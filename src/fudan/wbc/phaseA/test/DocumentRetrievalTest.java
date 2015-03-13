@@ -1,6 +1,7 @@
 package fudan.wbc.phaseA.test;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,6 +23,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.junit.Test;
 
+import fudan.wbc.phaseA.annotator.PubTator;
+import fudan.wbc.phaseA.annotator.PubTatorParser;
 import fudan.wbc.phaseA.bioASQ.DocumentRetrieval;
 import fudan.wbc.phaseA.macro.Utility;
 import fudan.wbc.phaseA.model.PubTatorDatabaseGenerator;
@@ -140,4 +143,28 @@ public class DocumentRetrievalTest {
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void createCleanTextTest() throws Exception{
+		File f = new File(Utility.pubTatorFilesDir);
+		PubTator pt = new PubTator();
+		PubTatorParser ptp = new PubTatorParser();
+		for(File file:f.listFiles()){
+			InputStream fileInputStream = new FileInputStream(file);
+			String str = pt.cleanText(fileInputStream);
+			InputStream inputStream = new ByteArrayInputStream(str.getBytes());
+			try{
+				ptp.parseFile(inputStream);
+				PrintWriter pw = new PrintWriter(new File("../PubTatorXML/cleanedText/"+file.getName()));
+				pw.print(str);
+				pw.close();
+			}catch(Exception e){
+				System.out.println("file needs clean:"+file.getName());
+			}
+			
+		}
+	}
+	
+	
+	
 }

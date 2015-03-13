@@ -3,10 +3,13 @@ package fudan.wbc.phaseA.ontologyCall;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
@@ -16,12 +19,22 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 public class ConceptCall {
-	 private static final String server = "http://gopubmed.org/web/bioasq/uniprot/json";
+//	 private static final String server = "http://gopubmed.org/web/bioasq/uniprot/json";
+//   private static final String server = "http://gopubmed.org/web/bioasq/doid/json";
+//	private static final String server = "http://gopubmed.org/web/bioasq/jochem/json";
+//	private static final String server = "http://gopubmed.org/web/bioasq/mesh/json";
+	private static final String server = "http://gopubmed.org/web/bioasq/go/json";
 
 	    @SuppressWarnings("unchecked")
 	    public static void main(String[] args) throws IOException
 	    {
-	        String keywords = "genes";
+//	        retrieveConcept("");
+	        
+	    }
+
+		public JSONArray retrieveConcept(String query) throws MalformedURLException,
+				UnsupportedEncodingException, IOException, HttpException {
+			String keywords = query;
 	        int page = 0;
 	        int conceptsPerPage = 10;
 
@@ -49,17 +62,27 @@ public class ConceptCall {
 	        stringPart.setCharSet("utf-8");
 	        stringPart.setContentType("application/json");
 	        method.setRequestEntity(new MultipartRequestEntity(new Part[] { stringPart }, method.getParams()));
-
+	        
+	        long beginTime = System.currentTimeMillis();
 	        // Execute and retrieve result
 	        client.executeMethod(method);
 	        String response = method.getResponseBodyAsString();
-	        System.out.println(response);
+	        System.out.println(response.length());
 
+	        if(response.length() == 123){
+	        	try { 
+	        		Thread.sleep (30000); 
+	        	} catch (InterruptedException ie){
+	        		ie.printStackTrace();
+	        	}
+	        	return retrieveConcept(query);
+	        }
+	        
 	        // Parse result
 	        Object parsedResult = JSONValue.parse(response);
 
 	        JSONObject result = (JSONObject) ((Map) parsedResult).get("result");
 	        JSONArray findings = (JSONArray) result.get("findings");
-	        
-	    }
+	        return findings;
+		}
 }

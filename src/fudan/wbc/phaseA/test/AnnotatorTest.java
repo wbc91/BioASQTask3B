@@ -1,6 +1,7 @@
 package fudan.wbc.phaseA.test;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -8,6 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.junit.Test;
 
 import fudan.wbc.phaseA.annotator.BioOntologyAnnotator;
@@ -16,56 +19,80 @@ import fudan.wbc.phaseA.macro.Utility;
 import fudan.wbc.phaseA.model.SourceFileAnalyzer;
 
 public class AnnotatorTest {
-	private static Map<String,String>replacement = null;
-	private static Set<String>unrecognized = null;
 	
-	static{
-		unrecognized = new HashSet<String>();
-		unrecognized.add("dnmt3");
-		unrecognized.add("under-expression");
-		unrecognized.add("drug");
-	}
-	
-	static{
-		replacement = new TreeMap<String,String>();
-		replacement.put("thyronamines", "thyronamine");
-	}
 	
 	@Test
 	public void createAnnotationTest() throws Exception{
-		String[] questionList = SourceFileAnalyzer.parse(new File("../trainingSet/BioASQ-trainingDataset2b.json"));
+		Utility.initializeConceptSet();
+		SourceFileAnalyzer sfa = SourceFileAnalyzer.getInstance();
+		sfa.parse(new File(Utility.fileDir));
+		JSONArray questionList = sfa.getQuestionArray();
 		BioOntologyAnnotator boa = new BioOntologyAnnotator();
-		for(int i = 0; i < questionList.length; ++i){
-			Set<String>otherWords = new HashSet<String>();
-			String tmp = questionList[i].trim().replaceAll("\n", " ");
+		for(int i = 0; i < questionList.size(); ++i){
+			JSONObject question = (JSONObject)questionList.get(i);
+			String questionBody = (String)question.get("body");
+			String questionId = (String)question.get("id");
+			String tmp = questionBody.trim().replaceAll("\n", " ");
 			tmp = tmp.replaceAll("\\?", " ");
+			tmp = tmp.replaceAll("\"", "");
 			String[] words = tmp.split(" ");
+			
 			for(int j = 0; j < words.length; ++j){
-				if(replacement.containsKey(words[j].toLowerCase())){
-					words[j] = replacement.get(words[j].toLowerCase()).replaceAll(" ","+");
-				}else if(unrecognized.contains(words[j].toLowerCase())){
-					otherWords.add(words[j].toLowerCase());
+				words[j] = words[j].toLowerCase();
+				if(Utility.replacement.containsKey(words[j])){
+					words[j] = Utility.replacement.get(words[j]);
 				}
-				
 			}
 			tmp = Utility.join(words, '+');
-			System.out.println(questionList[i]+": ");
 			boa.getAnnotation(tmp);
-			Iterator<String>it = otherWords.iterator();
-			while(it.hasNext()){
-				System.out.println(" "+(String)it.next());
+			HashSet<String>termSet = (HashSet<String>) boa.getTermSet();
+			for(int j = 0; j < words.length; ++j){
+				if(Utility.unrecognized.contains(words[j]) && !termSet.contains(words[j])){
+					termSet.add(words[j]);
+				}
+				else if(Utility.prohibited.contains(words[j]) && termSet.contains(words[j])){
+					termSet.remove(words[j]);
+				}
 			}
-			System.out.println();
-			System.out.println();
+			
+			try {
+				PrintWriter pw = new PrintWriter(new File("../Annotation/"+Utility.DirName+"/"+questionId+".txt"));
+				pw.println(questionBody);
+				Iterator<String>iter = termSet.iterator();
+				String concept = "";
+				while(true){
+					if(iter.hasNext()){
+						concept = iter.next();
+						pw.print(concept+"||");
+						if(termSet.size() >= 2)
+							System.out.println(questionId+":"+concept);
+					}
+					else {
+						concept = concept.substring(0, concept.length()-2);
+						break;
+					}
+				}
+				pw.println();
+				pw.close();
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			
 		}
 	}
 	
 	@Test
 	public void createSentenceAnnotationTest() throws Exception{
 		BioOntologyAnnotator boa = new BioOntologyAnnotator();
-		String tmp = "In separate multivariable analyses, past history of smoking was associated with increased risk for rheumatoid arthritis overall in men (odds ratio 2.0, 95% confidence interval 1.2-3.2) but not in women";
+//		String tmp = "Super-SILAC is a method used in quantitative proteomics. What is the super-SILAC mix? (SILAC: Stable Isotopic labelling by aminoacids in cell culture)";
+//		String tmp = "Are transcription and splicing connected";
+		String tmp = "What is the \"Proteomic ruler\"?";
 		tmp = tmp.replaceAll("%", "");
+		tmp = tmp.replaceAll("\"", "");
+		tmp = tmp.replaceAll("\\?", "");
 		tmp = tmp.replaceAll(" ", "+");
+		
+		
 		boa.getAnnotation(tmp);
 	}
 	
