@@ -3,6 +3,7 @@ package fudan.wbc.phaseA.bioASQ;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.Authenticator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -38,7 +39,11 @@ import fudan.wbc.phaseA.analyzer.AnalyzerUtils;
 import fudan.wbc.phaseA.analyzer.BioAnalyzer;
 import fudan.wbc.phaseA.annotator.BioOntologyAnnotator;
 import fudan.wbc.phaseA.annotator.PubTator;
+import fudan.wbc.phaseA.macro.MyAuthenticator;
 import fudan.wbc.phaseA.macro.Utility;
+import fudan.wbc.phaseA.model.LinguisticModel;
+import fudan.wbc.phaseA.model.PureQueryExpansionModel;
+import fudan.wbc.phaseA.model.RelevanceFeedbackModel;
 import fudan.wbc.phaseA.model.SourceFileAnalyzer;
 
 public class DocumentRetrieval {
@@ -100,6 +105,7 @@ public class DocumentRetrieval {
 			start = end;
 		}
 		latch.await();
+		System.out.println("done!"); 
 	}
 	class DocumentMultiRetrieval implements Runnable{
 		private int begin;
@@ -123,14 +129,18 @@ public class DocumentRetrieval {
 //				}
 				boa.setQuestionId(questionId);
 				try {
-					documentWriter = new FileWriter(new File("../dataSet/"+Utility.DirName+"/document/"+questionId+".json"));
+					File file = new File("../dataSet/"+Utility.DirName+"/document/"+questionId+".json");
+//					long time = file.lastModified();
+//					if(System.currentTimeMillis()-time < 21600000)continue;
+					documentWriter = new FileWriter(file);
 				} catch (IOException e) {
 				
 				}
 				
 				HashSet<String>termSet = null;
 				try {
-					termSet = questionBodyPreprocess(boa, questionBody);
+//					termSet = questionBodyPreprocess(boa, questionBody);
+					termSet = new HashSet<String>();
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				} 
@@ -153,8 +163,15 @@ public class DocumentRetrieval {
 				}
 				
 				try{
+					//BM25 only
+					relevantDocuments = PureQueryExpansionModel.retrieve(questionBody);
+					
+					//Synonym and Hypernyms
+//					relevantDocuments = LinguisticModel.retrieve(queryTerms);
+					//pseudo relevant feedback
+//					relevantDocuments = RelevanceFeedbackModel.retrieve(queryTerms);
 					//local
-					localPassageModel(queryTerms, questionId);
+//					localPassageModel(queryTerms, questionId);
 					//global
 //					retrieve(queryTerms,questionId);
 				}catch(Exception e){

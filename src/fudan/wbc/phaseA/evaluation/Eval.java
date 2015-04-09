@@ -16,6 +16,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import fudan.wbc.phaseA.macro.Utility;
+
 public class Eval {
 	private static int questionSize = 100;
 	private static File testFile = null;
@@ -139,6 +141,7 @@ public class Eval {
 	//		tgmap+=Math.log(ap+epsi);
 			ap = ap/(double)ans.size();
 			ap = (double)(Math.round(ap*1000))/1000;
+			System.out.println(ap);
 		}
 	}
 	//mean Precision
@@ -243,8 +246,11 @@ public class Eval {
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException{
 //		testFile = new File("E:/laboratory/bioASQ/BioASQ-task2bPhaseB-testset2.txt");
 //		testFile = new File("E:/laboratory/bioASQ2015/Task3B/trainingSet/BioASQ-trainingDataset2b.json");
-		testFile = new File("E:/laboratory/bioASQ2015/Task3B/dataSet/testDataSet/BioASQ-task3bPhaseB-testset1.txt");
-		result = new File("E:/laboratory/bioASQ2015/Task3B/dataSet/BioASQ-task3bPhaseA-testset1/results.json");
+//		testFile = new File("E:/laboratory/bioASQ2015/Task3B/trainingSet/BioASQ-trainingDataset2b.txt");
+//		testFile = new File("E:/laboratory/bioASQ2015/Task3B/trainingSet/BioASQ-trainingDataset3b.json");
+		testFile = new File("E:/laboratory/bioASQ2015/Task3B/dataSet/testDataSet/"+Utility.testDir+".txt");
+		result = new File("E:/laboratory/bioASQ2015/Task3B/dataSet/"+Utility.DirName+"/results.json");
+//		result = new File("C:/Users/wbc91/Downloads/results_3b_phaseA.json");
 //		result = new File("C:/Users/wbc91/Downloads/results_2b_phaseA.json");
 		score = new HashMap<String,HashMap<String,Score>>();
 		initAll();
@@ -253,9 +259,8 @@ public class Eval {
 		JSONArray questions = (JSONArray)testset.get("questions");
 		JSONObject evalset = (JSONObject)parser.parse(new FileReader(testFile));
 		JSONArray answers = (JSONArray)evalset.get("questions");
+		questionSize = questions.size();
 		for(int i = 0; i < questions.size();i++){
-			if(i == 31)
-				System.out.println();
 			JSONObject qjo = (JSONObject)questions.get(i);
 			JSONObject ajo = (JSONObject)answers.get(i);
 			perQuestionEval(qjo,ajo);

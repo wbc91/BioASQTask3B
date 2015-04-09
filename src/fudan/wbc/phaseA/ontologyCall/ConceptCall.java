@@ -20,15 +20,19 @@ import org.json.simple.JSONValue;
 
 public class ConceptCall {
 //	 private static final String server = "http://gopubmed.org/web/bioasq/uniprot/json";
-//   private static final String server = "http://gopubmed.org/web/bioasq/doid/json";
+   public static String server = "http://gopubmed.org/web/bioasq/doid/json";
 //	private static final String server = "http://gopubmed.org/web/bioasq/jochem/json";
 //	private static final String server = "http://gopubmed.org/web/bioasq/mesh/json";
-	private static final String server = "http://gopubmed.org/web/bioasq/go/json";
+//	private static final String server = "http://gopubmed.org/web/bioasq/go/json";
 
+
+   
 	    @SuppressWarnings("unchecked")
 	    public static void main(String[] args) throws IOException
 	    {
 //	        retrieveConcept("");
+	    	ConceptCall cc = new ConceptCall();
+	    	cc.retrieveConcept("Gray Platelet Syndrome");
 	        
 	    }
 
@@ -53,6 +57,8 @@ public class ConceptCall {
 	        JSONObject requestObject = new JSONObject();
 	        JSONArray parameterList = new JSONArray();
 	        parameterList.add(keywords);
+//	        parameterList.add(page);
+//	        parameterList.add(conceptsPerPage);
 	        requestObject.put("findEntities", parameterList);
 
 	        // Build the HTTP POST Request

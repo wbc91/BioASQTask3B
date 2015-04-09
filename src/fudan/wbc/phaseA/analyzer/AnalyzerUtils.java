@@ -2,22 +2,30 @@ package fudan.wbc.phaseA.analyzer;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.HashSet;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
 public class AnalyzerUtils {
-	private String[] phrase = new String[100];
+	private String[] phrase = new String[10000];
+	private HashSet<String>termSet = new HashSet<String>();
 	private int count_ph = 0;
 	
 	public void reset(){
-		phrase = new String[100];
+		phrase = new String[10000];
+		termSet = new HashSet<String>();
 		count_ph = 0;
 	}
 	public String[] getPhrase(){
 		return phrase;
 	}
+	
+	public HashSet<String>getTermSet(){
+		return this.termSet;
+	}
+	
 	public int getCount(){
 		return count_ph;
 	}
@@ -30,6 +38,7 @@ public class AnalyzerUtils {
 		while(stream.incrementToken()){
 //			System.out.print("["+term.term()+"]");
 			phrase[count_ph++] = term.toString();
+			termSet.add(term.toString());
 		}
 	}
 	public int wordCount(Analyzer analyzer, String text)throws IOException{

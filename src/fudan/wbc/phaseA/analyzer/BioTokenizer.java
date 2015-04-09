@@ -211,11 +211,16 @@ public class BioTokenizer extends Tokenizer{
 						words = Utility.join(subwords, '\0').toCharArray();
 					}
 				}
-				
+				if(words.length == 0)return false;
 				System.arraycopy(words, 0, buffer, 0, words.length);
 				termAtt.setLength(words.length);
-				offsetAtt.setOffset(correctOffset(offset), finalOffset = correctOffset(offset+words.length-1));
+				try{
+					offsetAtt.setOffset(correctOffset(offset), finalOffset = correctOffset(offset+words.length-1));
+				}catch(IllegalArgumentException e){
+					e.printStackTrace();
+				}
 				offset += words.length;
+				
 				return true;
 			}
 		}

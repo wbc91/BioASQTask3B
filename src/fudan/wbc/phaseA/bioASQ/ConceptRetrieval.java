@@ -24,9 +24,9 @@ public class ConceptRetrieval {
 	
 	private SourceFileAnalyzer sfa = SourceFileAnalyzer.getInstance();
 	
-	private String reProcessId = "514a0f0ad24251bc05000052";
+	private String reProcessId = "54ecb66d445c3b5a5f000002";
 	
-	private boolean reprocess =false;
+	private boolean reprocess =true;
 	public ConceptRetrieval(){
 		Utility.initializeConceptSet();
 	}
@@ -44,6 +44,7 @@ public class ConceptRetrieval {
 			JSONObject question = (JSONObject)questionList.get(i);
 			String questionBody = (String)question.get("body");
 			String questionId = (String)question.get("id");
+			System.out.println(questionId);
 			if(reprocess){
 				if(!questionId.equals(reProcessId))continue;
 			}
@@ -98,16 +99,25 @@ public class ConceptRetrieval {
 				String query = concept.replaceAll("||", " ");
 				FileWriter file = new FileWriter("../dataSet/"+Utility.DirName+"/concept/"+questionId+".json");
 				
-				JSONArray findings = ccc.retrieveConcept(query);
+//				String[] fields = new String[]{"uniprot","doid","jochem","mesh","go"};
+				String[] fields = new String[]{"uniprot","doid","mesh","go"};
 				JSONArray concepts = new JSONArray();
-				for(int fi = 0; fi < findings.size(); fi++){
-		        	if(fi == 10)break;
-		        	JSONObject jo = (JSONObject)findings.get(fi);
-		        	JSONObject jccps = (JSONObject)jo.get("concept");
-		        	concepts.add(jccps.get("uri"));
-		        }
-		        concepts.writeJSONString(file);
-		        
+				for(String field:fields){
+					ccc.server = "http://gopubmed.org/web/bioasq/"+field+"/json";
+					JSONArray findings = ccc.retrieveConcept(query);
+					for(int fi = 0; fi < findings.size(); fi++){
+			        	if(field.equals("mesh")&&fi == 3)break;
+			        	else if(field.equals("go")&&fi == 2)break;
+			        	else if(field.equals("jochem")&&fi == 1)break;
+			        	else if(field.equals("doid")&&fi == 2)break;
+			        	else if(field.equals("uniprot")&&fi == 2)break;
+			        	JSONObject jo = (JSONObject)findings.get(fi);
+			        	JSONObject jccps = (JSONObject)jo.get("concept");
+			        	concepts.add(jccps.get("uri"));
+			        }
+			        
+				}
+				concepts.writeJSONString(file);
 		        file.flush();
 		        file.close();
 				
