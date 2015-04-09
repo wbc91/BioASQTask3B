@@ -11,20 +11,35 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class SourceFileAnalyzer {
-	private static String[] questionList = null;
-	public static String[] parse(File file) throws FileNotFoundException, IOException, ParseException{
+	public static SourceFileAnalyzer getInstance(){
+		if(instance == null){
+			instance = new SourceFileAnalyzer();
+		}
+		return instance;
+	}
+	
+	private static SourceFileAnalyzer instance = null;
+	
+	private SourceFileAnalyzer(){
+		
+	}
+	
+	private JSONArray questionArray = null;
+	
+	public JSONArray getQuestionArray(){
+		return questionArray;
+	}
+	
+	public void parse(File file) throws FileNotFoundException, IOException, ParseException{
 		JSONParser parser = new JSONParser();
 		Object object = parser.parse(new FileReader(file));
 		JSONObject jsonObject = (JSONObject)object;
 		JSONArray jsonArray = (JSONArray)jsonObject.get("questions");
-		questionList = new String[jsonArray.size()];
-		for(int i = 0 ; i < jsonArray.size(); ++i){
-			JSONObject row = (JSONObject)jsonArray.get(i);
-			questionList[i] = (String)row.get("body");
+		
+		if(questionArray == null){
+			questionArray = new JSONArray();
 		}
-		
-		
-		return questionList;
+		questionArray = jsonArray;
 	}
 	
 }
